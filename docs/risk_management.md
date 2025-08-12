@@ -1,61 +1,59 @@
-# Risk Management
+# 风险管理
 
-## Leverage
+## Leverage（杠杆）
 
-On perpetual futures markets with leverage, Passivbot may expose more than 100% of the wallet's funds.  
+在永续合约市场中，Passivbot 可能会让持仓金额超过钱包余额的 100%。  
 
-Passivbot uses only (unleveraged) wallet balance in its calculations, so adjusting leverage on exchange will make no difference on risk, profit or bot behavior, as long as leverage is set high enough for the bot to make its orders according to the configuration. Practically, this means that leverage should be set at least higher than total_wallet_exposure_limit_long + total_wallet_exposure_limit_short for the bot to have enough margin to make its orders. Otherwise, the bot might encounter "insufficient margin" errors.
+Passivbot 只用未加杠杆的钱包余额进行风险和下单计算，因此只要交易所杠杆设置足够高，能满足机器人下单需求，实际杠杆设置不会影响风险、收益或机器人的行为。实际操作中，建议杠杆至少高于 total_wallet_exposure_limit_long + total_wallet_exposure_limit_short，这样机器人才能有足够的保证金下单，否则可能会遇到“保证金不足”错误。
 
-## Wallet Exposure
+## Wallet Exposure（钱包风险敞口）
 
-To measure a position's risk, Passivbot finds the ratio of position size (in quote) to total unleveraged balance.  
-The formula for wallet exposure is
+衡量单个持仓风险时，Passivbot 计算持仓规模（以报价币计）与未加杠杆钱包余额的比值。  
+计算公式：
 
 `wallet_exposure = (position_size * position_price) / unleveraged_wallet_balance`  
 
-wallet_exposure==0.0 means no position
-wallet_exposure==1.0 means 100% of unleveraged wallet balance is in position.
-wallet_exposure==4.0 means 400% of unleveraged wallet balance is in position.
+wallet_exposure==0.0 表示无持仓。
+wallet_exposure==1.0 表示持仓金额等于未加杠杆钱包余额。
+wallet_exposure==4.0 表示持仓金额为未加杠杆钱包余额的 4 倍。
 
-E.g. if wallet balance is $1000, long position size is 100.0 and position price is 35.0,  
-then wallet_exposure is `100 * 35 / 1000 == 3.5`
+例如，钱包余额为 $1000，做多持仓为 100.0，持仓价格为 35.0，  
+则 wallet_exposure = `100 * 35 / 1000 == 3.5`
 
-## Wallet Exposure Limit
+## Wallet Exposure Limit（单仓风险上限）
 
-The wallet_exposure_limit is the limit beyond than which the bot will not allow a position's wallet_exposure to grow.
+wallet_exposure_limit 表示单个持仓的风险敞口上限，超过该值机器人将不再加仓。
 
-For example, if wallet_exposure_limit=0.6, the bot will not make any more entries when a position's wallet_exposure >= 0.6.
+例如，wallet_exposure_limit=0.6 时，若某持仓 wallet_exposure >= 0.6，机器人将不再补仓。
 
-## Total Wallet Exposure Limit
+## Total Wallet Exposure Limit（总风险上限）
 
-User sets total_wallet_exposure_limit separately for long and short. A single position's wallet_exposure_limit is `total_wallet_exposure_limit / n_positions`.
+用户可分别为多头和空头设置 total_wallet_exposure_limit。单个持仓的 wallet_exposure_limit = total_wallet_exposure_limit / n_positions。
 
-## Bankruptcy and liquidation
+## Bankruptcy and liquidation（爆仓与强平）
 
-Bankruptcy is defined as when `equity == (balance + unrealized_pnl) == 0.0`, that is, when total debt is equal to total assets.
+爆仓指 `equity == (balance + unrealized_pnl) == 0.0`，即总负债等于总资产。
 
-Liquidation happens when the exchange force closes a position to avoid it going into negative equity.  
-This usually happens before actual bankruptcy is reached, in order for exchange to cover slippage costs.
+强平是指交易所为防止账户变成负资产而强制平仓，通常会在真正爆仓前发生，以覆盖滑点等成本。
 
-Bankruptcy price may be calculated from position and balance.
+爆仓价格可根据持仓和余额计算：
 
-E.g.  
-If wallet_exposure==1.0, bankruptcy price is zero.  
-If wallet_exposure==2.0, bankruptcy price is 50% lower than pos price.  
-If wallet_exposure==3.0, bankruptcy price is 33.33% lower than pos price.  
-If wallet_exposure==10.0, bankruptcy price is 10% lower than pos price.  
+例如：  
+如果 wallet_exposure==1.0，爆仓价为 0。  
+如果 wallet_exposure==2.0，爆仓价比持仓价低 50%。  
+如果 wallet_exposure==3.0，爆仓价比持仓价低 33.33%。  
+如果 wallet_exposure==10.0，爆仓价比持仓价低 10%。  
 
 
-## Getting stuck
+## Getting stuck（被套）
 
-When a bot has no more entries left and wallet_exposure_limit is reached or exceeded, it is termed "getting stuck".  
+当机器人无法再加仓且 wallet_exposure_limit 已达到或超过时，称为“被套”。  
 
-If a long position is stuck and the price keeps falling, the distance between position price and market price grows larger, and closing the position in profit becomes less likely. Therefore it is desirable to bring position price closer to price action such that the position may be closed in profit on a small bounce.  
-To achieve this, the position must be increased. However, the larger the position size, the higher the risk of liquidation, should the price keep moving the wrong way.
+如果多头被套且价格持续下跌，持仓价与市价的距离会越来越大，想要小幅反弹就平仓获利的可能性也会降低。此时，若想让持仓价更接近市价，需继续加仓，但加仓越多，若行情继续不利，爆仓风险也越大。
 
-## Diversification
+## Diversification（分散化）
 
-While correlation is observed in most markets in general and in crypto markets in particular (e.g. if the price of bitcoin crashes, most other cryptos tend to follow closely), it is also observed that the "dead cat" often bounces at slightly different times and at different heights. Therefore, diversifying to multiple coins helps reduce the risk of a single bad coin destroying the whole account.
+虽然大多数市场（尤其是加密市场）普遍存在相关性（如比特币暴跌时其他币也会跟跌），但不同币种的反弹时机和幅度往往不同。因此，分散持仓于多个币种有助于降低单一币种爆仓导致全局亏损的风险。
 
-A thousand coin flips will converge on 500 heads and 500 tails. One single coin flip will be either heads or tails. So it may be more desirable to end up with 3 out of 10 bots stuck, each with wallet_exposure==0.1, than with 1 single bot stuck with wallet_exposure==1.0.
+比如抛硬币 1000 次，正反面大致各 500 次；但只抛一次，要么正面要么反面。所以，与其让 1 个机器人被套 wallet_exposure==1.0，不如让 10 个机器人各被套 wallet_exposure==0.1，风险更分散。
 

@@ -1,44 +1,44 @@
 ![Passivbot](docs/images/pbot_logo_full.svg)
 
-# Trading bot running on Bybit, OKX, Bitget, GateIO, Binance and Hyperliquid
+# 支持 Bybit、OKX、Bitget、GateIO、Binance 和 Hyperliquid 的量化交易机器人
 
-:warning: **Used at one's own risk** :warning:
+:warning: **使用风险自负** :warning:
 
 v7.3.13
 
 
-## Overview
+## 概述
 
-Passivbot is a cryptocurrency trading bot written in Python and Rust, intended to require minimal user intervention.  
+Passivbot 是用 Python 和 Rust 编写的加密货币量化交易机器人，旨在让用户尽量少干预。  
 
-It operates on perpetual futures derivatives markets, automatically creating and cancelling limit buy and sell orders on behalf of the user. It does not try to predict future price movements, it does not use technical indicators, nor does it follow trends. Rather, it is a contrarian market maker, providing resistance to price changes in both directions, thereby "serving the market" as a price stabilizer.  
+它专为永续合约市场设计，能自动为用户挂单和撤单（限价买入/卖出）。它不预测未来价格，不用技术指标，也不追随趋势。相反，它是一种逆势做市策略，在价格上下波动时持续提供流动性，起到市场“减震器”的作用。  
 
-Passivbot's behavior may be backtested on historical price data, using the included backtester whose CPU heavy functions are written in Rust for speed. Also included is an optimizer, which finds better configurations by iterating thousands of backtests with different candidates, converging on the optimal ones with an evolutionary algorithm.  
+Passivbot 可在历史数据上回测策略表现，内置回测器的核心计算用 Rust 编写以提升速度。同时还内置优化器，可通过成千上万次回测自动寻找更优配置，采用进化算法收敛到最优解。  
 
-## Strategy
+## 策略说明
 
-Inspired by the Martingale betting strategy, the robot will make a small initial entry and double down on its losing positions multiple times to bring the average entry price closer to current price action. The orders are placed in a grid, ready to absorb sudden price movements. After each re-entry, the robot quickly updates its closing orders at a set take-profit markup. This way, if there is even a minor market reversal, or "bounce", the position can be closed in profit, and it starts over.  
+Passivbot 的策略灵感来自马丁格尔加仓法。机器人会先小仓位开仓，若行情不利则多次加仓拉近持仓均价。所有订单以网格方式分布，能有效吸收突发行情。每次补仓后，机器人会快速调整止盈单，只要行情有小幅反弹（即“bounce”），就能获利平仓并重新开始。  
 
-### Trailing Orders
-In addition to grid-based entries and closes, Passivbot may be configured to utilize trailing entries and trailing closes.
+### 追踪订单
+除了网格开/平仓，Passivbot 还可配置追踪开仓和追踪平仓。
 
-For trailing entries, the bot waits for the price to move beyond a specified threshold and then retrace by a defined percentage before placing a re-entry order. Similarly, for trailing closes, the bot waits before placing its closing orders until after the price has moved favorably by a threshold percentage and then retraced by a specified percentage. This may result in the bot locking in profits more effectively by exiting positions when the market shows signs of reversing instead of at a fixed distance from average entry price.
+追踪开仓时，机器人会等待价格突破某阈值后回撤一定比例再补仓。追踪平仓时，机器人会等价格有利波动后回撤一定比例再挂止盈单。这样有助于在市场反转信号出现时更有效地锁定利润，而不是仅按固定距离止盈。
 
-Grid and trailing orders may be combined, such that the robot enters or closes a whole or a part of the position as grid orders and/or as trailing orders.
+网格和追踪订单可灵活组合，既可全部用网格，也可全部用追踪，或部分用网格、部分用追踪。
 
 ### Forager
-The Forager feature dynamically chooses the most volatile markets on which to open positions. Volatility is defined as the mean of the normalized relative range for the most recent 1m candles, i.e. `mean((ohlcv.high - ohlcv.low) / ohlcv.close)`.
+Forager 功能会动态选择近期波动性最大的市场开仓。波动性定义为最近 1 分钟 K 线的归一化振幅均值，即 `mean((ohlcv.high - ohlcv.low) / ohlcv.close)`。
 
-### Unstucking Mechanism
-Passivbot manages underperforming, or "stuck", positions by realizing small losses over time. If multiple positions are stuck, the bot prioritizes positions with the smallest gap between the entry price and current market price for "unstucking". Losses are limited by ensuring that the account balance does not fall under a set percentage below the past peak balance.  
+### 解套机制
+Passivbot 会主动管理表现不佳（“被套”）的仓位，逐步实现小额亏损。如果有多个被套仓位，优先解套持仓价与现价距离最小的仓位。机器人会限制亏损，确保账户余额不会低于历史峰值的一定比例。  
 
-## Installation
+## 安装方法
 
-To install Passivbot and its dependencies, follow the steps below.
+按照以下步骤安装 Passivbot 及其依赖。
 
-### Step 1: Clone the Repository
+### 步骤 1：克隆仓库
 
-First, clone the Passivbot repository to the local machine:
+先将 Passivbot 仓库克隆到本地：
 
 ```sh
 git clone https://github.com/enarjord/passivbot.git
@@ -46,38 +46,34 @@ cd passivbot
 ```
 
 
-### Step 2: Install Rust
-Passivbot uses Rust for some of its components. Install Rust by following these steps:
+### 步骤 2：安装 Rust
+Passivbot 部分功能依赖 Rust。请访问 https://www.rust-lang.org/tools/install 按指引安装 Rustup（Rust 安装和版本管理工具）。安装完成后重启终端。
 
-Visit https://www.rust-lang.org/tools/install
-Follow the instructions to install Rustup, the Rust installer and version management tool.
-After installation, restart the terminal or command prompt.
+### 步骤 3：创建并激活虚拟环境
 
-### Step 3: Create and Activate a Virtual Environment
-
-Create a virtual environment to manage dependencies:
+建议使用虚拟环境管理依赖：
 
 ```sh
 python3 -m venv venv
 ```
 
-Activate the virtual environment:
+激活虚拟环境：
 
 ```sh
 source venv/bin/activate
 ```
 
-### Step 4: Install Python Dependencies
+### 步骤 4：安装 Python 依赖
 
-Install all the required Python dependencies listed in the `requirements.txt` file:
+安装 `requirements.txt` 中所有依赖：
 
 ```sh
 pip install -r requirements.txt
 ```
 
-### Step 5 (optional): Build Rust Extensions
+### 步骤 5（可选）：手动编译 Rust 扩展
 
-Passivbot will attempt to build the necessary Rust extensions automatically, but they can also be built manually by navigating to the `passivbot-rust` directory and using `maturin`:
+Passivbot 启动时会自动尝试编译 Rust 扩展，也可手动编译：
 
 ```sh
 cd passivbot-rust
@@ -85,27 +81,27 @@ maturin develop --release
 cd ..
 ```
 
-If changes in the Rust source are detected, recompilation is needed, which Passivbot will attempt to do automatically when starting. To manually recompile, use the commands given above.
+如 Rust 源码有变动需重新编译，Passivbot 启动时会自动检测并尝试编译，也可手动执行上述命令。
 
-### Step 6: Add API keys
+### 步骤 6：添加 API 密钥
 
-Make a copy of the api-keys template file:
+复制 api-keys 模板文件：
 
 ```sh
 cp api-keys.json.example api-keys.json
 ```
 
-Add your keys to api-keys.json.
+将你的密钥填入 api-keys.json。
 
-### Step 7: Run Passivbot
+### 步骤 7：运行 Passivbot
 
-To start the bot with the default settings, run:
+用默认配置启动机器人：
 
 ```sh
 python3 src/main.py -u {account_name_from_api-keys.json}
 ```
 
-or make a new configuration file, using `configs/template.json` as a template, and start the bot with:
+或用自定义配置文件（以 `configs/template.json` 为模板）：
 
 
 ```sh
@@ -114,76 +110,75 @@ python3 src/main.py path/to/config.json
 
 ## Jupyter Lab
 
-Jupyter lab needs to be run in the same virtual environment as the bot. Activate venv (see installation instructions above, step 3), and launch Jupyter lab from the Passivbot root dir with:
+Jupyter lab 需在与机器人相同的虚拟环境下运行。激活 venv（见上文步骤 3），并在 Passivbot 根目录启动 Jupyter lab:
 ```shell
 python3 -m jupyter lab
 ```
 
-## Requirements
+## 运行环境要求
 
 - Python >= 3.8
-- [requirements.txt](requirements.txt) dependencies
+- 依赖见 [requirements.txt](requirements.txt)
 
-## Pre-optimized configurations
+## 预优化配置
 
-Coming soon...
+即将上线...
 
-See also https://pbconfigdb.scud.dedyn.io/
+更多配置见 https://pbconfigdb.scud.dedyn.io/
 
-## Documentation:
+## 文档
 
-For more detailed information about Passivbot, see documentation files here: [docs/](docs/)
+更多详细说明见 [docs/](docs/) 目录。
 
-## Support
+## 社区支持
 
 [![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/QAF2H2UmzZ)
 
 [![Telegram](https://img.shields.io/badge/Telegram-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white)](https://t.me/passivbot_futures)
 
-## Third Party Links, Referrals and Tip Jar
+## 第三方服务、推荐与打赏
 
 **Passivbot Manager Service:**  
-There is a paid manager service to run Passivbot on the user's behalf:  
+付费托管服务，帮你运行 Passivbot：  
 www.passivbotmanager.com  
 
 **Passivbot GUI**
-A graphical user interface for Passivbot:  
+Passivbot 图形界面：  
 https://github.com/msei99/pbgui
 
-**Referrals:**  
-Signing up using these referrals is appreciated:  
+**推荐注册链接：**  
+欢迎使用以下推荐链接支持项目：  
 https://accounts.binance.com/register?ref=TII4B07C  
 https://partner.bybit.com/b/passivbot  
 https://partner.bitget.com/bg/Y8FU1W  
-https://www.okx.com/join/PASSIVBOT  (20% rebate)  
+https://www.okx.com/join/PASSIVBOT  (20% 返佣)  
 https://app.hyperliquid.xyz/join/PASSIVBOT  
 https://app.defx.com/join/4DKR14  
 
-**Note on Binance**  
-To support continued Passivbot development, please use a Binance account which  
-1) was created after 2024-09-21 and  
-2) either:  
-  a) was created without a referral link, or  
-  b) was created with referral ID: "TII4B07C".  
-                                                                                      
-Passivbot receives commissions from trades only for accounts meeting these criteria.  
+**关于 Binance**  
+为支持 Passivbot 持续开发，请使用满足以下条件的 Binance 账户：  
+1) 2024-09-21 之后注册；  
+2) 并且：  
+  a) 注册时未填写推荐码，或  
+  b) 注册时填写推荐码："TII4B07C"。
+
+只有满足上述条件的账户，Passivbot 才能获得交易返佣。
 
 
 **BuyMeACoffee:**  
 https://www.buymeacoffee.com/enarjord  
 
-**Donations:**  
-If the robot is profitable, consider donating as showing gratitude for its development:  
+**捐赠：**  
+如果机器人为你带来盈利，欢迎捐赠支持开发：  
 
-- USDT or USDC Binance Smart Chain BEP20:  
+- USDT 或 USDC Binance Smart Chain BEP20:  
 0x4b7b5bf6bea228052b775c052843fde1c63ec530  
-- USDT or USDC Arbitrum One:  
+- USDT 或 USDC Arbitrum One:  
 0x4b7b5bf6bea228052b775c052843fde1c63ec530  
 
-Bitcoin (BTC) via Strike:  
+比特币（BTC）通过 Strike：  
 enarjord@strike.me
 
 ## License
 
-Released freely without conditions.
-Anybody may copy, distribute, modify, use or misuse for commercial, non-commercial, educational or non-educational purposes, censor, claim as one's own or otherwise do whatever without permission from anybody.
+完全开源、无任何限制。任何人可自由复制、分发、修改、商用或非商用、教育或非教育用途、审查、署名或不署名，无需任何许可。

@@ -1,19 +1,19 @@
-## Quick Guide for Passivbot on Hyperliquid
+## Passivbot 在 Hyperliquid 上的快速指南
 
-### Hyperliquid account creation
+### Hyperliquid 账户创建
 
-1. Go to https://app.hyperliquid.xyz/ and create an account by connecting a third party wallet wallet (more secure) or using email (less secure).
-2. Click the "Deposit" button to transfer USDC (not USDT, USDC.E or any other stablecoin) via the Arbitrum network to your account's address.
-3. Navigate to "More" -> "API" and follow instructions to create an API wallet (agent wallet).
+1. 访问 https://app.hyperliquid.xyz/，通过连接第三方钱包（更安全）或使用邮箱（较不安全）创建账户。
+2. 点击“Deposit”按钮，通过 Arbitrum 网络将 USDC（不是 USDT、USDC.E 或其他稳定币）转入你的账户地址。
+3. 进入“More” -> “API”，按照指引创建 API 钱包（代理钱包）。
 
-### Passivbot setup
+### Passivbot 设置
 
-1. If not already installed, install Passivbot. Otherwise, pull latest master branch: `git pull`.
-2. Update the requirements:
+1. 如果尚未安装 Passivbot，请先安装；如已安装，拉取最新 master 分支：`git pull`。
+2. 更新依赖：
    ```bash
    pip install -r requirements.txt
    ```
-3. Add your Hyperliquid wallet address and API wallet to `api-keys.json`:
+3. 在 `api-keys.json` 中添加你的 Hyperliquid 钱包地址和 API 钱包信息：
 ```json
 "hyperliquid_01": {
     "exchange": "hyperliquid",
@@ -22,18 +22,18 @@
     "is_vault": false
 }
 ```
-For the `"private_key"`, use the API wallet created in the API section on Hyperliquid.
+`"private_key"` 填写你在 Hyperliquid API 部分创建的 API 钱包私钥。
 
-Now Passivbot may be run as normal. Note that Hyperliquid has a minimum $10 order size:  
+现在可以像平常一样运行 Passivbot。注意 Hyperliquid 的最小下单金额为 10 美元：  
 `initial_entry_cost = balance * (total_wallet_exposure_limit / n_positions) * initial_qty_pct`
 
-#### HyperLiquid with a Vault (CopyTrading-like)
-1. In HyperLiquid, navigate to "Vaults" in the top menu and create a new vault.
-2. Set the name and description (limited to 250 characters).
-3. To find the wallet address of the vault, navigate to "Vaults" again and find your vault in the public vault list.
-4. Click on your vault and get the public address of the vault. This address will be your `YOUR_VAULT_PUBLIC_ADDRESS` in `api-keys.json`. Remember to set `"is_vault"` to true.
+#### 使用 Vault（类似跟单）
+1. 在 HyperLiquid 顶部菜单进入“Vaults”，创建一个新的 vault。
+2. 设置名称和描述（最多 250 个字符）。
+3. 要查找 vault 的钱包地址，再次进入“Vaults”，在公开 vault 列表中找到你的 vault。
+4. 点击你的 vault，获取其公开地址。此地址即为 `api-keys.json` 中的 `YOUR_VAULT_PUBLIC_ADDRESS`。记得将 `"is_vault"` 设为 true。
 
-Update `api-keys.json`:
+更新 `api-keys.json`：
 ```json
 "hyperliquid_01": {
     "exchange": "hyperliquid",
@@ -43,4 +43,4 @@ Update `api-keys.json`:
 }
 ```
 
-Refer to Hyperliquid's documentation for more details.
+更多细节请参考 Hyperliquid 官方文档。

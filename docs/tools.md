@@ -1,35 +1,35 @@
-# Tools
+# 工具说明
 
-## Extract Pareto Frontier and best config from optimize output
+## 从优化结果中提取 Pareto 前沿和最佳配置
 
-The pareto front and best config extracted will be dumped in `optimize_results_analysis/`. Results from an optimize session are usually dumped in `optimize_results/`.
+提取出的 pareto 前沿和最佳配置会保存在 `optimize_results_analysis/` 目录。优化会话的原始结果通常在 `optimize_results/` 目录下。
 
 ```shell
 python3 src/tools/extract_best_config.py path/to/all_results.txt
 ```
 
-## Copy ohlcv data from old location to new location
+## 复制 ohlcv 数据到新目录
 
-In Passivbot v7.2.13 the location of ohlcv data changed. Run this script to copy data already downloaded in earlier versions.
+在 Passivbot v7.2.13 版本中，ohlcv 数据的存储位置发生了变化。运行此脚本可将旧版本已下载的数据迁移到新位置。
 
 ```shell
 python3 src/tools/copy_ohlcvs_from_v7.2.12.py
 ```
 
-## Generate list of approved coins based on market cap
+## 根据市值生成可交易币种列表
 
 ```shell
 python3 src/tools/generate_mcap_list.py
 ```
 
-Output from `python3 src/tools/generate_mcap_list.py -h`:
+运行 `python3 src/tools/generate_mcap_list.py -h` 可查看参数说明：
 ```
   --n_coins N_COINS, -n N_COINS
-                        Maxiumum number of top market cap coins. Default=100
+                        最大市值币种数量，默认值为 100
   --minimum_market_cap_dollars MINIMUM_MARKET_CAP_MILLIONS, -m MINIMUM_MARKET_CAP_MILLIONS
-                        Minimum market cap in millions of USD. Default=300.0
+                        最小市值（百万美元），默认值为 300.0
   --exchange EXCHANGE, -e EXCHANGE
-                        Optional: filter by coins available on exchange. Comma separated values. Default=None
+                        可选：按交易所筛选币种，多个用逗号分隔，默认 None
   --output OUTPUT, -o OUTPUT
-                        Optional: Output path. Default=configs/approved_coins_{n_coins}_{min_mcap}.json
+                        可选：输出路径，默认 configs/approved_coins_{n_coins}_{min_mcap}.json
 ```

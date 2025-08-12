@@ -1,69 +1,68 @@
-# Optimizing
+# 优化指南
 
-Passivbot configurations can be optimized using a multi-objective evolutionary algorithm to balance performance metrics while meeting constraints.
+Passivbot 的配置可通过多目标进化算法进行优化，以在满足约束的前提下平衡各项性能指标。
 
-## Running Optimization
+## 启动优化
 
 ```bash
 python3 src/optimize.py [path/to/config.json]
 ```
 
-- Defaults to `configs/template.json` if no config is specified
-- Use existing configs as starting points: `--start path/to/config(s)`
+- 如果未指定配置文件，默认使用 `configs/template.json`
+- 可通过 `--start path/to/config(s)` 指定已有配置作为起点
 
-Example:
+示例：
 ```bash
 python3 src/optimize.py configs/template.json --start configs/starting_pool/
 ```
 
-Most config parameters can be modified via CLI. `python3 src/optimize.py -h` for more info.
+大多数参数都可通过命令行修改。更多用法请运行：`python3 src/optimize.py -h`
 
-## Optimization Process
+## 优化流程
 
-- Uses NSGA-II genetic algorithm to evolve configurations
-- Backtests across historical OHLCV data
-- Uses multiprocessing with shared memory for reduced RAM load
-- Maintains Pareto front of best-performing configurations
-- Enforces constraints via `optimize.limits`
-- Optimizes for multiple metrics via `optimize.scoring`
-- Avoids duplicates through hash tracking and perturbation
+- 采用 NSGA-II 遗传算法进化配置
+- 基于历史 OHLCV 数据进行回测
+- 多进程并行，使用共享内存以降低内存占用
+- 持续维护表现最优的 Pareto 前沿解集
+- 通过 `optimize.limits` 强制约束条件
+- 通过 `optimize.scoring` 优化多个指标
+- 通过哈希追踪和扰动避免重复配置
 
-## Output Structure
+## 输出结构
 
-Each optimization run creates a directory:
+每次优化会生成一个目录：
 ```
 optimize_results/YYYY-MM-DDTHH_MM_SS_{exchanges}_{n_days}days_{coin_label}_{hash}/
 ```
 
-Contents:
-- `all_results.bin`: Binary log of all evaluated configs (msgpack format)
-- `pareto/`: JSON files for Pareto-optimal configurations
-  - Named `{distance}_{hash}.json` where `distance` is normalized distance to ideal point
-- `index.json`: List of Pareto member hashes
+目录内容：
+- `all_results.bin`：所有评估过的配置的二进制日志（msgpack 格式）
+- `pareto/`：Pareto 最优配置的 JSON 文件
+  - 文件名为 `{distance}_{hash}.json`，其中 `distance` 表示到理想点的归一化距离
+- `index.json`：Pareto 成员的哈希列表
 
-## Analyzing Results
+## 结果分析
 
-Full analysis is included in each member of the Pareto front. Use
+每个 Pareto 成员都包含完整分析。可用如下命令生成可视化图表，支持 2 或 3 个指标的绘图：
 ```bash
 python3 src/pareto_store.py optimize_results/.../pareto/
 ```
-to produce a visualization. Supports plotting for 2 or 3 metrics.
 
-## Optimization Limits
+## 优化约束
 
-To enforce constraints during optimization, use the `optimize.limits` key. Each limit defines a threshold beyond which the configuration will be penalized. Penalty grows with severity of violation. CLI and config file formats are supported.
+如需在优化过程中强制约束，可用 `optimize.limits` 键。每个约束定义一个阈值，超出后将对配置进行惩罚，惩罚强度随超标程度递增。支持命令行和配置文件两种格式。
 
-### CLI Format:
-Example:
+### 命令行格式：
+示例：
 ```bash
 --limits "--penalize_if_greater_than_drawdown_worst 0.3 --penalize_if_lower_than_adg 0.001"
 ```
 
-This will:
-- Penalize any config where `drawdown_worst > 0.3`
-- Penalize any config where `adg < 0.001`
+含义：
+- 若 `drawdown_worst > 0.3`，则对该配置进行惩罚
+- 若 `adg < 0.001`，则对该配置进行惩罚
 
-### Config Format:
+### 配置文件格式：
 ```json
 "limits": {
   "penalize_if_greater_than_drawdown_worst": 0.3,
@@ -71,67 +70,66 @@ This will:
 }
 ```
 
-### Notes:
-- If the limit key is just `metric_name`, the direction will be inferred from its scoring weight.
-- Metric names may be either plain (e.g., `adg` for USD collateralized backtest) or prefixed with "\_btc" (e.g., `btc_adg` for BTC collateralized backtest).
-- Penalties are applied to the objective score; they do not disqualify a config.
-- Penalty magnitudes are exponentially scaled but capped to maintain stability.
+### 说明：
+- 若约束键仅为指标名，则方向由其评分权重自动推断
+- 指标名可为普通（如 `adg`，用于 USD 保证金回测）或加前缀 `btc_`（如 `btc_adg`，用于 BTC 保证金回测）
+- 惩罚会加到目标分数上，但不会直接淘汰配置
+- 惩罚强度呈指数增长，但有上限以保证稳定
 
-## Performance Metrics
+## 性能指标
 
-### Returns & Growth
-| Metric | Description |
-|--------|-------------|
-| `adg` | Average Daily Gain (smoothed geometric) |
-| `mdg` | Median Daily Gain |
-| `gain` | Final Balance Gain (ratio of end/start balance) |
+### 收益与增长
+| Metric | 说明 |
+|--------|------|
+| `adg` | 平均日收益率（平滑几何平均） |
+| `mdg` | 日收益中位数 |
+| `gain` | 最终余额增长（期末/期初余额比） |
 
-### Risk Metrics
-| Metric | Description |
-|--------|-------------|
-| `drawdown_worst` | Maximum peak-to-trough drawdown |
-| `drawdown_worst_mean_1pct` | Mean of worst 1% drawdowns |
-| `expected_shortfall_1pct` | Mean of worst 1% daily losses (CVaR) |
-| `equity_balance_diff_neg_max` | Maximum negative equity-balance difference |
-| `equity_balance_diff_neg_mean` | Mean negative equity-balance difference |
-| `equity_balance_diff_pos_max` | Maximum positive equity-balance difference |
-| `equity_balance_diff_pos_mean` | Mean positive equity-balance difference |
+### 风险指标
+| Metric | 说明 |
+|--------|------|
+| `drawdown_worst` | 最大回撤 |
+| `drawdown_worst_mean_1pct` | 最差 1% 回撤的均值 |
+| `expected_shortfall_1pct` | 最差 1% 日亏损均值（CVaR） |
+| `equity_balance_diff_neg_max` | 资产与余额最大负偏差 |
+| `equity_balance_diff_neg_mean` | 资产与余额负偏差均值 |
+| `equity_balance_diff_pos_max` | 资产与余额最大正偏差 |
+| `equity_balance_diff_pos_mean` | 资产与余额正偏差均值 |
 
-### Ratios & Efficiency
-| Metric | Description |
-|--------|-------------|
-| `sharpe_ratio` | Return-to-Volatility |
-| `sortino_ratio` | Return-to-Downside Volatility |
-| `calmar_ratio` | Return-to-Max Drawdown |
-| `sterling_ratio` | Return-to-Average 1% Worst Drawdowns |
-| `omega_ratio` | `sum(pos_returns) / sum(abs(neg_returns))` where returns are daily equity pct changes |
+### 比率与效率
+| Metric | 说明 |
+|--------|------|
+| `sharpe_ratio` | 收益/波动率比 |
+| `sortino_ratio` | 收益/下行波动率比 |
+| `calmar_ratio` | 收益/最大回撤比 |
+| `sterling_ratio` | 收益/平均最差 1% 回撤比 |
+| `omega_ratio` | 日正收益之和 / 日负收益绝对值之和 |
 
-### Position Metrics
-| Metric | Description |
-|--------|-------------|
-| `positions_held_per_day` | Average number of positions held daily |
-| `position_held_hours_max` | Maximum duration of any position (hours) |
-| `position_held_hours_mean` | Average position duration (hours) |
-| `position_held_hours_median` | Median position duration (hours) |
-| `position_unchanged_hours_max` | Maximum time between position adjustments (hours) |
+### 仓位相关指标
+| Metric | 说明 |
+|--------|------|
+| `positions_held_per_day` | 日均持仓数 |
+| `position_held_hours_max` | 单笔持仓最长时间（小时） |
+| `position_held_hours_mean` | 持仓平均时长（小时） |
+| `position_held_hours_median` | 持仓时长中位数（小时） |
+| `position_unchanged_hours_max` | 持仓未调整的最长时间（小时） |
 
-### Equity Curve Quality
-| Metric | Description |
-|--------|-------------|
-| `equity_choppiness` | Normalized total variation (lower is smoother) |
-| `equity_jerkiness` | Normalized mean absolute second derivative |
-| `exponential_fit_error` | MSE from log-linear fit (lower = more consistent growth) |
+### 权益曲线质量
+| Metric | 说明 |
+|--------|------|
+| `equity_choppiness` | 权益曲线总波动归一化（越低越平滑） |
+| `equity_jerkiness` | 权益曲线二阶导绝对值均值归一化 |
+| `exponential_fit_error` | 对数线性拟合均方误差（越低增长越稳定） |
 
-> Metrics with the \_w suffix use recency-weighted means across multiple time slices.
-Specifically, each \_w metric is computed as the average of the metric evaluated over 10 overlapping subsets of the equity curve: the entire period, last 1/2, last 1/3, ..., down to the last 1/10. This emphasizes recent performance while still accounting for longer-term behavior.
+> 带 `_w` 后缀的指标为加权均值，强调近期表现。具体为：在权益曲线的 10 个重叠子区间（全区间、后 1/2、后 1/3 ... 到后 1/10）分别计算指标后取平均。
 
-## Utilities
+## 工具方法
 
-Loading results programmatically:
+以编程方式加载结果：
 ```python
 from opt_utils import load_results
 
 for config in load_results("optimize_results/.../all_results.bin"):
-    # Work with config
+    # 处理 config
 ```
 
