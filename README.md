@@ -180,27 +180,11 @@ https://www.buymeacoffee.com/enarjord
 enarjord@strike.me
 
 ## License
-This is free and unencumbered software released into the public domain.
+这是发布到公共领域的免费且无限制的软件。
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+任何人都可以免费复制，修改，发布，使用，编译，出售或以源代码形式或编译为二进制，出于任何目的，商业或非商业，以及任何目的方法。
 
-In jurisdictions that recognize copyright laws, the author or authors
-of this software dedicate any and all copyright interest in the
-software to the public domain. We make this dedication for the benefit
-of the public at large and to the detriment of our heirs and
-successors. We intend this dedication to be an overt act of
-relinquishment in perpetuity of all present and future rights to this
-software under copyright law.
+在承认版权法的司法管辖区中，作者或作者该软件专用于任何版权通往公共领域的软件。我们为利益做出了这种奉献精神全面的公众，并损害了我们的继承人和继任者。我们打算将这种奉献精神成为公开的行为永久保留所有现在和未来的权利软件根据版权法。
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
-
+该软件是“原样”提供的，没有任何形式的保证，明示或暗示，包括但不限于适销性，适合特定目的的适合性和非侵权。在任何情况下，作者都不应对任何索赔，损害赔偿或其他责任，无论是在合同，侵权还是其他责任中，是由软件或使用或使用或与使用或相关的软件中的其他交易。
 For more information, please refer to <https://unlicense.org/>

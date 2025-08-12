@@ -137,76 +137,78 @@ Passivbot 可配置为创建网格开仓订单，价格和数量由以下参数�
   - 噪声度为 1 分钟 OHLCV 的归一化振幅均值：`mean((high - low) / close)`。
   - forager 模式下，机器人选取噪声度最高的币种开仓。
 
-## Coin Overrides
+## 货币覆盖
 - **coin_overrides**:
-  - Specify full or partial configs for individual coins, overriding values from master config.
-  - Format: {"COIN1": overrides1, "COIN2": overrides2}
-  - Whole configs may be loaded with parameter "override_config_path". May either be full path to config, or filename for alternate config file from the same directory as master config file.
-  - Specific override parameters take precedence over override parameters loaded from external config.
-  - Only a subset of config parameters are eligible for overriding master config:
-    - config.bot.long/short:
-      ```
-      [
-        close_grid_markup_end, close_grid_markup_start, close_grid_qty_pct, close_trailing_grid_ratio, close_trailing_qty_pct,
-        close_trailing_retracement_pct, close_trailing_threshold_pct, ema_span_0, ema_span_1, enforce_exposure_limit,
-        entry_grid_double_down_factor, entry_grid_spacing_pct, entry_grid_spacing_weight, entry_initial_ema_dist,
-        entry_initial_qty_pct, entry_trailing_double_down_factor, entry_trailing_grid_ratio, entry_trailing_retracement_pct,
-        entry_trailing_threshold_pct, unstuck_close_pct, unstuck_ema_dist, unstuck_threshold, wallet_exposure_limit
-      ]
-      ```
-    -config.live:
-    ```
-    [forced_mode_long, forced_mode_short, leverage]
-    ```
-  - Examples:
-    - `{"COIN1": {"override_config_path": "path/to/override_config.json"}}` -- Will attempt to load "path/to/override_config.json" and apply all eligible parameters from there for COIN1
-    - `{"COIN2": {"override_config_path": "path/to/other_override_config.json", {"bot": {"long": {"close_grid_markup_start": 0.005}}}}}` -- Will attempt to load `"path/to/other_override_config.json"` first, and apply `{"bot": {"long": {"close_grid_markup_start": 0.005}}}` after.
-    - `{"COIN3": {"bot": {"short": {"entry_initial_qty_pct": 0.01}}, "live": {"forced_mode_long": "panic"}}}` -- Will apply given overrides for COIN3.
+- 为单个货币指定完整或部分配置，覆盖主配置中的值。
+- 格式：{"COIN1": overrides1, "COIN2": overrides2}
+- 可以使用参数“override_config_path”加载完整配置。该参数可以是配置的完整路径，也可以是与主配置文件位于同一目录中的备用配置文件的文件名。
+- 特定的覆盖参数优先于从外部配置加载的覆盖参数。
+- 只有部分配置参数可以覆盖主配置：
+- config.bot.long/short:
+```
+[
+close_grid_markup_end, close_grid_markup_start, close_grid_qty_pct, close_trailing_grid_ratio, close_trailing_qty_pct,
+close_trailing_retracement_pct, close_trailing_threshold_pct, ema_span_0, ema_span_1, enforce_exposure_limit,
+entry_grid_double_down_factor, entry_grid_spacing_pct, entry_grid_spacing_weight, entry_initial_ema_dist,
+entry_initial_qty_pct, entry_trailing_double_down_factor, entry_trailing_grid_ratio, entry_trailing_retracement_pct,
+entry_trailing_threshold_pct, unstuck_close_pct、unstuck_ema_dist、unstuck_threshold、wallet_exposure_limit
+]
+```
+-config.live:
+```
+[forced_mode_long、forced_mode_short、leverage]
+```
+- 示例：
+- `{"COIN1": {"override_config_path": "path/to/override_config.json"}}` 
+-- 将尝试加载 "path/to/override_config.json"，并从中应用所有符合 COIN1 条件的参数。
+- `{"COIN2": {"override_config_path": "path/to/other_override_config.json", {"bot": {"long": {"close_grid_markup_start": 0.005}}}}}` 
+-- 将首先尝试加载 "path/to/other_override_config.json"，然后应用 `{"bot": {"long": {"close_grid_markup_start": 0.005}}}` 之后。
+- `{"COIN3": {"bot": {"short": {"entry_initial_qty_pct": 0.01}}, "live": {"forced_mode_long": "panic"}}}` -- 将为 COIN3 应用给定的覆盖。
 - **forced_modes**:
-  - Choices: `[n (normal), m (manual), gs (graceful_stop), t (tp_only), p (panic)]`.
-    - **Normal mode**: Passivbot manages the position as normal.
-    - **Manual mode**: Passivbot ignores the position.
-    - **Graceful stop**: If there is a position, Passivbot manages it; otherwise, no new positions are opened.
-    - **Take Profit Only mode**: Passivbot only manages closing orders.
-    - **Panic mode**: Passivbot closes the position immediately.
+- 选项：`[n（正常）、m（手动）、gs（graceful_stop）、t（tp_only）、p（恐慌）]`。  
+- Choices: `[n (normal), m (manual), gs (graceful_stop), t (tp_only), p (panic)]`.
+- **Normal mode（正常模式）**: Passivbot 正常管理仓位。
+- **Manual mode（手动模式）**: Passivbot 忽略仓位。
+- **Graceful stop（优雅停止）**: 如果有仓位，Passivbot 会管理该仓位；否则，不会开立新仓。
+- **Take Profit Only mode（仅获利模式）**: Passivbot 仅管理平仓订单。
+- **Panic mode（恐慌模式）**: Passivbot 立即平仓。
+##实时交易设置
 
-## Live Trading Settings
-
-- **approved_coins**:
-  - List of coins approved for trading. If empty, see `live.empty_means_all_approved`.
-    - Backtester and optimizer use `live.approved_coins` minus `live.ignored_coins`.
-  - May be given as a path to an external file, read continuously by Passivbot.
-  - May be split into long and short:
-    - Example: `{"long": ["COIN1", "COIN2"], "short": ["COIN2", "COIN3"]}`
-- **auto_gs**: Automatically enable graceful stop for positions on disapproved coins.
-  - Graceful stop: The bot continues trading as normal but does not open a new position after the current position is fully closed.
-  - If `auto_gs=false`, positions on disapproved coins are put on manual mode.
-- **empty_means_all_approved**:
-  - If `true`, `approved_coins=[]` means all coins are approved.
-  - If `false`, `approved_coins=[]` means no coins are approved.
-- **execution_delay_seconds**: Wait `x` seconds after executing to exchange.
-- **filter_by_min_effective_cost**: If `true`, disallows coins where `balance * WE_limit * initial_qty_pct < min_effective_cost`.
-  - Example: If the exchange's effective minimum cost for a coin is `$5`, but the bot wants to make an order of `$2`, disallow that coin.
-- **forced_mode_long**, **forced_mode_short**: Force all coins long/short to a given mode.
-  - Choices: `[m (manual), gs (graceful_stop), p (panic), t (take_profit_only)]`.
-- **ignored_coins**:
-  - List of coins the bot will not make positions on. If there are positions on that coin, enable graceful stop or manual mode.
-  - May be given as a path to an external file, read continuously by Passivbot.
-  - May be split into long and short:
-    - Example: `{"long": ["COIN1", "COIN2"], "short": ["COIN2", "COIN3"]}`
-- **leverage**: Leverage set on the exchange. Default is `10`.
-- **market_orders_allowed**: If `true`, allows Passivbot to place market orders when the order price is very close to the current market price. If `false`, only places limit orders. Default is `true`.
-- **max_n_cancellations_per_batch**: Cancels `n` open orders per execution.
-- **max_n_creations_per_batch**: Creates `n` new orders per execution.
-- **max_n_restarts_per_day**: If the bot crashes, restart up to `n` times per day before stopping completely.
-- **mimic_backtest_1m_delay**: If `true`, the bot will only update and evaluate open orders once per full minute, synchronized to the clock (e.g., 12:01:00, 12:02:00, etc.). This mimics the backtester's timestep logic and avoids intraminute updates. Useful for achieving higher fidelity between backtest and live performance.
-- **minimum_coin_age_days**: Disallows coins younger than a given number of days.
-- **ohlcvs_1m_rolling_window_days**: How many days of OHLCVs the bot keeps in memory. Reduce if RAM consumption is an issue.
-- **ohlcvs_1m_update_after_minutes**: How many minutes old OHLCVs for a coin may be before fetching fresh ones from the exchange. Increase if rate limiting is an issue.
-- **pnls_max_lookback_days**: How far into the past to fetch PnL history.
-- **price_distance_threshold**: Minimum distance to current price action required for EMA-based limit orders.
-- **time_in_force**: Default is Good-Till-Cancelled.
-- **user**: Fetch API key/secret from `api-keys.json`.
+ - **批准_coins **：
+   -批准交易的硬币清单。如果为空，请参见`live.empty_means_all_appraved`。
+     -后代和优化器使用`live.appraved_coins`缩小live.ignored_coins`。
+   -可以作为外部文件的途径给出，通过Passivbot连续读取。
+   -可以分为长而短：
+     -示例：`{“ long”：[“ COIN1”，“ COIN2”]，“ short”：[“ COIN2”，“ COIN3”]}'
+ - **auto_gs **：自动启用在不赞成的硬币上位置的优雅停止。
+   -优雅的停止：机器人继续正常交易，但在当前位置完全关闭后不会打开新的位置。
+   -如果`auto_gs = false`，则在不赞成的硬币上的位置将处于手动模式。
+ - **empty_means_all_appraved **：
+   -如果“ true”，则`批准_coins = []`意味着所有硬币均已批准。
+   -如果“ false”，则`批准_coins = []`意味着没有批准硬币。
+ - **execution_delay_seconds **：执行交换后等待x`秒。
+ - **filter_by_min_effective_cost **：如果``true`''，请在``true`''中删除``balance *we_limit *pinitial_qty_pct <min_effective_cost`。
+   -示例：如果交易所的有效最低硬币成本为“ $ 5”，但是机器人希望下令``2美元''，请禁止该硬币。
+ - **forced_mode_long **，**forced_mode_short **：将所有硬币长/缩写为给定模式。
+ -选择：`[M（手动），GS（graceful_stop），p（panic），t（take_profit_only）]`。
+ - **忽略_coins **：
+   -机器人列表不会置于位置。如果该硬币上有位置，请启用优美的停止或手动模式。
+   -可以作为外部文件的途径给出，通过Passivbot连续读取。
+   -可以分为长而短：
+     -示例：`{“ long”：[“ COIN1”，“ COIN2”]，“ short”：[“ COIN2”，“ COIN3”]}'
+ - **杠杆**：交易所设置的杠杆作用。默认值为`10`。
+ - **Market_orders_lower **：如果``true`''允许Passivbot在订单价格非常接近当前市场价格时下达市场订单。如果“ false”，则只有限制订单。默认值为“ true”。
+ - **max_n_cancellations_per_batch **：取消每个执行的打开订单。
+ - **max_n_creations_per_batch **：每执行创建n`新订单。
+ - **max_n_restarts_per_day **：如果机器人崩溃，请每天重新启动至`n`次数，然后完全停止。
+ - **mimic_backtest_1m_delay **：如果true`机器人只会更新和评估每整分钟一次的打开订单，并同步到时钟（例如12:01：00，12：02:00等）。这模仿了后期的时间段逻辑，并避免了内部更新。有助于在回归和现场表现之间实现更高的保真度。
+ - **minumum_coin_age_days **：删除比给定数量年轻的硬币。
+ - **OHLCVS_1M_ROLLING_WINDOW_DAYS **：BOT保留了多少天的OHLCV。如果消耗是问题，请减少。
+ - **OHLCVS_1M_UPDATE_AFTER_MINUTE **：在从交易所获取新鲜的硬币之前，可能是硬币的大ohlcvs。如果利率限制是一个问题，则增加。
+ - **PNLS_MAX_LKIGBACK_DAYS **：距过去有多远以获取PNL历史记录。
+ - **PRICE_DISTANCE_THRESHOLD **：基于EMA的限额订单所需的当前价格操作的最小距离。
+ - **time_in_force **：默认值是好的。
+ - **用户**：从`api-keys.json`获取api键/秘密。
 
 ## Optimization Settings
 
