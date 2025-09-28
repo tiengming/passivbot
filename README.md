@@ -1,10 +1,10 @@
 ![Passivbot](docs/images/pbot_logo_full.svg)
 
-# 支持 Bybit、OKX、Bitget、GateIO、Binance 和 Hyperliquid 的量化交易机器人
+# 支持 Bybit、OKX、Bitget、GateIO、Binance, Kucoin 和 Hyperliquid 的量化交易机器人
 
 :warning: **使用风险自负** :warning:
 
-v7.3.17
+v7.3.21
 
 
 ## 概述
@@ -51,21 +51,40 @@ Passivbot 部分功能依赖 Rust。请访问 https://www.rust-lang.org/tools/in
 
 ### 步骤 3：创建并激活虚拟环境
 
-建议使用虚拟环境管理依赖：
+### Step 3: Create and Activate a Virtual Environment
 
+Create a virtual environment to manage dependencies:
+
+ **Linux/macOS:**
 ```sh
 python3 -m venv venv
 ```
 
-激活虚拟环境：
+ **Windows (Command Prompt or PowerShell):**
+```cmd
+python -m venv venv
+```
 
+Activate the virtual environment:
+
+ **Linux/macOS:**
 ```sh
 source venv/bin/activate
 ```
 
-### 步骤 4：安装 Python 依赖
+ **Windows (Command Prompt):**
+```cmd
+venv\Scripts\activate
+```
 
-安装 `requirements.txt` 中所有依赖：
+ **Windows (PowerShell):**
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+### Step 4: Install Python Dependencies
+
+Install all the required Python dependencies listed in the `requirements.txt` file:
 
 ```sh
 pip install -r requirements.txt
@@ -138,9 +157,9 @@ python3 -m jupyter lab
 
 ## 第三方服务、推荐与打赏
 
-**Passivbot Manager Service:**  
-付费托管服务，帮你运行 Passivbot：  
-www.passivbotmanager.com  
+**Hyperliquid Reference Vault**
+Passivbot's default template config running on a Hyperliquid Vault:  
+https://app.hyperliquid.xyz/vaults/0x490af7d4a048a81db0f677517ed6373565b42349
 
 **Passivbot GUI**
 Passivbot 图形界面：  
@@ -151,18 +170,18 @@ https://github.com/msei99/pbgui
 https://accounts.binance.com/register?ref=TII4B07C  
 https://partner.bybit.com/b/passivbot  
 https://partner.bitget.com/bg/Y8FU1W  
-https://www.okx.com/join/PASSIVBOT  (20% 返佣)  
+https://www.okx.com/join/PASSIVBOT  
 https://app.hyperliquid.xyz/join/PASSIVBOT  
-https://app.defx.com/join/4DKR14  
+https://www.kucoin.com/r/rf/CX8Q6DUF  
 
-**关于 Binance**  
-为支持 Passivbot 持续开发，请使用满足以下条件的 Binance 账户：  
-1) 2024-09-21 之后注册；  
-2) 并且：  
-  a) 注册时未填写推荐码，或  
-  b) 注册时填写推荐码："TII4B07C"。
-
-只有满足上述条件的账户，Passivbot 才能获得交易返佣。
+**Note on Binance**  
+To support continued Passivbot development, please use a Binance account which  
+1) was created after 2024-09-21 and  
+2) either:  
+  a) was created without a referral link, or  
+  b) was created with referral ID: "TII4B07C".  
+                                                                                      
+Passivbot receives commissions from trades only for accounts meeting these criteria.  
 
 
 **BuyMeACoffee:**  
